@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рынок Standoff 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(180deg, #1e2528 0%, #0f1416 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-panel {
+            background: #1e2528;
+            padding: 15px;
+            border-bottom: 3px solid #ff4655;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .sort-button, #calculate-selected {
+            background: linear-gradient(45deg, #ff4655, #ff7a85);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 0 10px;
+        }
+
+        .sort-button:hover, #calculate-selected:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 70, 85, 0.7);
+        }
+
+        .category-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 15px;
+            background: #1e2528;
+            border: 2px solid #ff4655;
+            border-radius: 5px;
+            padding: 5px;
+            list-style: none;
+            margin: 0;
+            z-index: 11;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .category-list.active {
+            display: block;
+        }
+
+        .category-list li a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 8px 12px;
+            display: block;
+            border-radius: 3px;
+            transition: background 0.3s;
+            text-transform: uppercase;
+        }
+
+        .category-list li a.active,
+        .category-list li a:hover {
+            background: #ff4655;
+        }
+
+        .selected-prices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .selected-prices p {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .selected-prices span {
+            color: #ff4655;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 20px;
+            text-align: center;
+            color: #ff4655;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px rgba(255, 70, 85, 0.5);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .item-card {
+            background: #2a3236;
+            border: 2px solid #3a4449;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .item-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(255, 70, 85, 0.3);
+        }
+
+        .item-card.selected {
+            border-color: #ff4655;
+            box-shadow: 0 0 10px rgba(255, 70, 85, 0.7);
+        }
+
+        .item-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .item-card h4 {
+            font-size: 12px;
+            margin: 5px 0;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .price-tag {
+            background: #1e2528;
+            border: 1px solid #ff4655;
+            border-radius: 5px;
+            padding: 5px;
+            margin-top: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .price-tag p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffd700; /* Золотой цвет как в Standoff 2 */
+            text-shadow: 0 0 3px #ffaa00, 0 0 5px #ffaa00; /* Тень для стиля */
+        }
+
+        .total-section-prices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 14px;
+            margin: 20px 0;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .total-section-prices p {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .total-section-prices span {
+            color: #ff4655;
+        }
+
+        footer {
+            background: #1e2528;
+            text-align: center;
+            padding: 15px;
+            border-top: 3px solid #ff4655;
+            font-size: 12px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 600px) {
+            .top-panel { padding: 10px; }
+            .sort-button, #calculate-selected { font-size: 12px; padding: 6px 12px; }
+            .category-list li a { font-size: 11px; padding: 6px 10px; }
+            .selected-prices, .total-section-prices { flex-wrap: wrap; gap: 10px; font-size: 12px; }
+            h2 { font-size: 20px; }
+            .item-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+            .item-card h4 { font-size: 10px; }
+            .price-tag p { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-panel">
+        <button class="sort-button">Сортировка</button>
+        <ul class="category-list">
+            <li><a href="#knives">Ножи</a></li>
+            <li><a href="#small-skins">Мелкие скины</a></li>
+            <li><a href="#main-skins">Основные скины</a></li>
+            <li><a href="#all-weapons">Все оружия</a></li>
+            <li><a href="#all-skins" class="active">Все скины</a></li>
+        </ul>
+        <button id="calculate-selected">Рассчитать</button>
+        <div class="selected-prices">
+            <p>Выбрано: <span id="selected-gold">0</span> G</p>
+        </div>
+    </div>
+
+    <main>
+        <h2>Все скины</h2>
+        <div class="item-grid" id="item-grid">
+            <!-- Ножи -->
+            <div class="item-card" data-category="knives">
+                <img src="m9bayonet.png" alt="">
+                <h4>M9 Bayonet</h4>
+                <div class="price-tag">
+                    <p>3640 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="karambit.png" alt="">
+                <h4>Karambit</h4>
+                <div class="price-tag">
+                    <p>1600 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="jkommando.png" alt="">
+                <h4>J Kommando</h4>
+                <div class="price-tag">
+                    <p>1060 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="flip.png" alt="">
+                <h4>Flip</h4>
+                <div class="price-tag">
+                    <p>993.97 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="scorpion.png" alt="">
+                <h4>Scorpion</h4>
+                <div class="price-tag">
+                    <p>651 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="tanto.png" alt="">
+                <h4>Tanto</h4>
+                <div class="price-tag">
+                    <p>727 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="dualdaggers.png" alt="">
+                <h4>Dual Daggers</h4>
+                <div class="price-tag">
+                    <p>745.99 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="kukri.png" alt="">
+                <h4>Kukri</h4>
+                <div class="price-tag">
+                    <p>540 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="stiletto.png" alt="">
+                <h4>Stiletto</h4>
+                <div class="price-tag">
+                    <p>730.99 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="knives">
+                <img src="sting.png" alt="">
+                <h4>Sting</h4>
+                <div class="price-tag">
+                    <p>1030 G</p>
+                </div>
+            </div>
+            <!-- Мелкие скины -->
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="glock.png" alt="">
+                <h4>Glock</h4>
+                <div class="price-tag">
+                    <p>98.99 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="usp.png" alt="">
+                <h4>USP</h4>
+                <div class="price-tag">
+                    <p>2 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="p350.png" alt="">
+                <h4>P350</h4>
+                <div class="price-tag">
+                    <p>41 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="dualberrettas.png" alt="">
+                <h4>Dual Berrettas</h4>
+                <div class="price-tag">
+                    <p>5.98 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="tec9.png" alt="">
+                <h4>Tec-9</h4>
+                <div class="price-tag">
+                    <p>2.28 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="fiveseven.png" alt="">
+                <h4>Five-Seven</h4>
+                <div class="price-tag">
+                    <p>52 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="deserteagle.png" alt="">
+                <h4>Desert Eagle</h4>
+                <div class="price-tag">
+                    <p>38 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="fabm.png" alt="">
+                <h4>FABM</h4>
+                <div class="price-tag">
+                    <p>7.29 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="sm1014.png" alt="">
+                <h4>SM1014</h4>
+                <div class="price-tag">
+                    <p>1.90 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="spas.png" alt="">
+                <h4>SPAS</h4>
+                <div class="price-tag">
+                    <p>0.09 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="m60.png" alt="">
+                <h4>M60</h4>
+                <div class="price-tag">
+                    <p>4.13 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="mac10.png" alt="">
+                <h4>MAC-10</h4>
+                <div class="price-tag">
+                    <p>17.50 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="ump45.png" alt="">
+                <h4>UMP-45</h4>
+                <div class="price-tag">
+                    <p>1.99 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="mp5.png" alt="">
+                <h4>MP5</h4>
+                <div class="price-tag">
+                    <p>10.05 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="mp7.png" alt="">
+                <h4>MP7</h4>
+                <div class="price-tag">
+                    <p>12.99 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="p90.png" alt="">
+                <h4>P90</h4>
+                <div class="price-tag">
+                    <p>0.22 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="fnfal.png" alt="">
+                <h4>FN FAL</h4>
+                <div class="price-tag">
+                    <p>4.47 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="famas.png" alt="">
+                <h4>FAMAS</h4>
+                <div class="price-tag">
+                    <p>0.40 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="small-skins all-weapons">
+                <img src="val.png" alt="">
+                <h4>VAL</h4>
+                <div class="price-tag">
+                    <p>13.79 G</p>
+                </div>
+            </div>
+            <!-- Основные скины -->
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="akr.png" alt="">
+                <h4>AKR</h4>
+                <div class="price-tag">
+                    <p>465 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="m4.png" alt="">
+                <h4>M4</h4>
+                <div class="price-tag">
+                    <p>104 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="m4a1.png" alt="">
+                <h4>M4A1</h4>
+                <div class="price-tag">
+                    <p>390.21 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="akr12.png" alt="">
+                <h4>AKR-12</h4>
+                <div class="price-tag">
+                    <p>20 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="m16.png" alt="">
+                <h4>M16</h4>
+                <div class="price-tag">
+                    <p>365 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="m40.png" alt="">
+                <h4>M40</h4>
+                <div class="price-tag">
+                    <p>10 G</p>
+                </div>
+            </div>
+            <div class="item-card" data-category="main-skins all-weapons">
+                <img src="awm.png" alt="">
+                <h4>AWM</h4>
+                <div class="price-tag">
+                    <p>800 G</p>
+                </div>
+            </div>
+        </div>
+        <div class="total-section-prices">
+            <p>Всего в разделе: <span id="total-gold">0</span> G</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>Все права защищены © 2025</p>
+    </footer>
+
+    <script>
+        // Фильтрация
+        function filterItems(category) {
+            const items = document.querySelectorAll('.item-card');
+            const h2 = document.querySelector('main h2');
+            items.forEach(item => {
+                const itemCategories = item.getAttribute('data-category').split(' ');
+                item.style.display = (category === 'all-skins' || itemCategories.includes(category)) ? 'block' : 'none';
+            });
+            h2.textContent = {
+                'knives': 'Ножи',
+                'small-skins': 'Мелкие скины',
+                'main-skins': 'Основные скины',
+                'all-weapons': 'Все оружия',
+                'all-skins': 'Все скины'
+            }[category];
+            calculateTotalSection();
+        }
+
+        document.querySelectorAll('.category-list li a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('.category-list .active').classList.remove('active');
+                link.classList.add('active');
+                filterItems(link.getAttribute('href').substring(1));
+            });
+        });
+
+        document.querySelector('.sort-button').addEventListener('click', () => {
+            document.querySelector('.category-list').classList.toggle('active');
+        });
+
+        document.querySelectorAll('.item-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('selected');
+            });
+        });
+
+        document.getElementById('calculate-selected').addEventListener('click', () => {
+            const selectedItems = document.querySelectorAll('.item-card.selected .price-tag p');
+            let totalGold = 0;
+            selectedItems.forEach(price => {
+                const goldValue = parseFloat(price.textContent.replace(' G', ''));
+                totalGold += goldValue;
+            });
+            document.getElementById('selected-gold').textContent = totalGold.toFixed(2);
+        });
+
+        function calculateTotalSection() {
+            const visibleItems = document.querySelectorAll('.item-card:not([style*="display: none"]) .price-tag p');
+            let totalGold = 0;
+            visibleItems.forEach(price => {
+                const goldValue = parseFloat(price.textContent.replace(' G', ''));
+                totalGold += goldValue;
+            });
+            document.getElementById('total-gold').textContent = totalGold.toFixed(2);
+        }
+
+        calculateTotalSection();
+    </script>
+</body>
+</html>
