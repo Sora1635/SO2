@@ -212,6 +212,11 @@
             .item-card h4 { font-size: 10px; }
             .price-tag p { font-size: 11px; }
         }
+
+        /* Добавлено для убирания синеватой подсветки при нажатии */
+        .item-card {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -523,6 +528,8 @@
                 document.querySelector('.category-list .active').classList.remove('active');
                 link.classList.add('active');
                 filterItems(link.getAttribute('href').substring(1));
+                // Добавлено: сворачиваем список после выбора категории
+                document.querySelector('.category-list').classList.remove('active');
             });
         });
 
